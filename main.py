@@ -6,19 +6,22 @@ from sklearn.metrics.pairwise        import linear_kernel
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 app = FastAPI(debug=True)
-df_merged=pd.read_csv(r"C:\Users\Usuario\Desktop\ProyectoIndividual\DataSets-Clean\Df_Merged.csv", encoding="utf-8")
+df_merged=pd.read_csv(r".\DataSets-Clean\Df_Merged.csv", encoding="utf-8")
 
 
 @app.get('/')
 def message():
     return 'PROYECTO INTEGRADOR ABRAHAM JORGE FERNANDO'
 
+#Creacion de los endpoints
+
 @app.get("/PlayTimeGenre")
 def PlayTimeGenre(genre: str) -> dict:
     """ 
     Obtiene el año con más horas jugadas para un género específico. 
 
-    Genre: Genero a obtener el número de años de lanzamiento con más horas
+    Genre: Genero a obtener el número de años de lanzamiento con más horas, ejemplos de parametros
+    "Action", "Casual", "Education"
 
     Returns:
         Año con más horas jugadas para un género específico teniendo en cuenta los generos disponibles.
@@ -37,22 +40,31 @@ def PlayTimeGenre(genre: str) -> dict:
 
 @app.get("/UserForGenre/")
 def UserForGenre(genero):
-    # Filtrar el DataFrame por el género dado
+    """
+        Recibe un genero de juego como entrada, ejemplos de parametros
+        "Action", "Casual", "Education"
+        Retorna el usuario que acumula mas horas jugadas para el genero dado como parametro, y una 
+        lista de la acumulacion de horas jugadas por año
+        
+    """
+    
+    
+    # Se filtra el DataFrame por el género dado
     genero=genero.capitalize()
-    genre_df = df_merged[df_merged[genero] == 1]  # Seleccionar las filas donde el género tiene valor 1
+    genre_df = df_merged[df_merged[genero] == 1]  # SE selecciona las filas donde el género tiene valor 1
     
     if genre_df.empty:
         return "No se encontraron datos para el género proporcionado"
     
-    # Encontrar el usuario con más horas jugadas para el género
+    # SE busca el usuario con más horas jugadas para el género
     usuario_mas_horas = genre_df.groupby('user_id')['playtime_forever'].sum().idxmax()
     
-    # Calcular la acumulación de horas jugadas por año para ese género
+    # Calcula la acumulación de horas jugadas por año para ese género
     horas_por_anio = genre_df.groupby('posted_year')['playtime_forever'].sum().reset_index()
     horas_por_anio = horas_por_anio.rename(columns={'posted_year': 'Año', 'playtime_forever': 'Horas'})
     horas_por_anio = horas_por_anio.to_dict(orient='records')
     
-    # Crear el diccionario de retorno
+    # SE crea el diccionario de retorno
     retorno = {
         "Usuario con más horas jugadas para " + genero: usuario_mas_horas,
         "Horas jugadas": horas_por_anio
@@ -60,8 +72,21 @@ def UserForGenre(genero):
     
     return retorno
 
+
+
+
+
 @app.get("/UsersRecommend/")
 def UsersRecommend(año:int):
+    """A partir del año ingresado como entrada, y del Sentiment_Score busca los desarrolladores
+    mas recomendados por los usuarios
+    ejemplo de parametro de entrada 2010, 2011, 2012, 2013..
+
+    Devuelve el top 3 de juegos MÁS recomendados por usuarios 
+    para el año dado
+    """
+    
+    
     # Filtrar las revisiones para el año dado y que sean recomendadas
     revisiones_año = df_merged[(df_merged['posted_year'] ==(año)) & (df_merged['recommend'] == True)]
 
@@ -79,8 +104,19 @@ def UsersRecommend(año:int):
     return top_3_juegos_recomendados
 
 
+
+
 @app.get("/UsersWorstDeveloper/")
 def UsersWorstDeveloper(año:int):
+    """
+    Recibe como parametro de entrada el año deseado, realizando una busqueda por años y por el 
+    sentiment_score
+    ejemplo de parametro de entrada 2010, 2011, 2012, 2013..
+    
+     Devuelve el top 3 de desarrolladoras con juegos MENOS 
+    recomendados por usuarios para el año dado.
+    """
+    
     # Filtrar las revisiones para el año dado y que no sean recomendadas
     revisiones_año = df_merged[(df_merged['posted_year'] == año) & (df_merged['recommend'] == False)]
 
@@ -97,8 +133,19 @@ def UsersWorstDeveloper(año:int):
 
     return top_3_developers_no_recomendadas
 
+
+
+
 @app.get("/sentiment_analysis/")
 def sentiment_analysis(empresa_desarrolladora):
+    
+    """ recibe como parametro de entrada la empresa desarrolladora,
+     se devuelve un diccionario con el nombre de la desarrolladora como llave y una lista con
+      la cantidad total de registros de reseñas de usuarios que se encuentren categorizados con 
+      un análisis de sentimiento como valor.
+      
+      ejemplos de nombres de entrada Valve, dev4play, BlueLine Games
+    """
     
     empresa_desarrolladora=empresa_desarrolladora.capitalize()
     # Filtrar las revisiones por la empresa desarrolladora especificada
