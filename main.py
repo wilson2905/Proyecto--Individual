@@ -6,7 +6,7 @@ from sklearn.metrics.pairwise        import linear_kernel
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 app = FastAPI(debug=True)
-df_merged=pd.read_csv(".\DataSets-Clean\df_reducido_final.csv", encoding="utf-8")
+df_merged=pd.read_csv(".\df_reducido_final.csv", encoding="utf-8")
 
 
 @app.get('/')
