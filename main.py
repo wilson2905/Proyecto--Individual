@@ -7,7 +7,7 @@ from sklearn.metrics.pairwise        import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
 
 app = FastAPI(debug=True)
-df_merged=pd.read_csv("df_reducido_final.csv", encoding="utf-8", chunksize=50)
+df_merged=pd.read_csv("df_reducido_final.csv", encoding="utf-8")
 
 
 @app.get('/')
