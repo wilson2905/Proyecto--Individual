@@ -2,12 +2,12 @@ from fastapi import FastAPI
 import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise        import cosine_similarity
-from sklearn.metrics.pairwise        import linear_kernel
-from sklearn.feature_extraction.text import TfidfVectorizer
+#from sklearn.metrics.pairwise        import linear_kernel
+#from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import MinMaxScaler
 
 app = FastAPI(debug=True)
-df_merged=pd.read_csv("df_reducido_final.csv", encoding="utf-8", chunksize=50)
+df_merged=pd.read_csv("df_reducido_final.csv", encoding="utf-8")
 
 
 @app.get('/')
@@ -141,11 +141,11 @@ def UsersWorstDeveloper(año:int):
 def sentiment_analysis(empresa_desarrolladora):
     
     """ recibe como parametro de entrada la empresa desarrolladora,
-     se devuelve un diccionario con el nombre de la desarrolladora como llave y una lista con
-      la cantidad total de registros de reseñas de usuarios que se encuentren categorizados con 
-      un análisis de sentimiento como valor.
-      
-      ejemplos de nombres de entrada Valve, dev4play, BlueLine Games
+    se devuelve un diccionario con el nombre de la desarrolladora como llave y una lista con
+    la cantidad total de registros de reseñas de usuarios que se encuentren categorizados con 
+    un análisis de sentimiento como valor.
+    
+    ejemplos de nombres de entrada Valve, dev4play, BlueLine Games
     """
     
     empresa_desarrolladora=empresa_desarrolladora.capitalize()
