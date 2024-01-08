@@ -77,7 +77,7 @@ def UserForGenre(genero):
 
 
 
-@app.get("/UsersRecommend/")
+@app.get("/UsersRecommend/{año}")
 def UsersRecommend(año:int):
     """A partir del año ingresado como entrada, y del Sentiment_Score busca los desarrolladores
     mas recomendados por los usuarios
