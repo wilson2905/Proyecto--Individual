@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import MinMaxScaler
 
 app = FastAPI(debug=True)
-df_merged=pd.read_csv("df_reducido_final.csv", encoding="utf-8", chunksize=256)
+df_merged=pd.read_csv("df_reducido_final.csv", encoding="utf-8", chunksize=50)
 
 
 @app.get('/')
