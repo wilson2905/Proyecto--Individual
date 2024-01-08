@@ -7,7 +7,7 @@ from sklearn.metrics.pairwise        import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
 
 app = FastAPI(debug=True)
-df_merged=pd.read_csv("df_reducido_final.csv", encoding="utf-8")
+df_merged=pd.read_csv("df_reducido_final.csv", encoding="utf-8", chunksize=50)
 
 
 @app.get('/')
@@ -172,7 +172,7 @@ def sentiment_analysis(empresa_desarrolladora):
 
 
 # Seleccionar las columnas relevantes para calcular la similitud
-columnas_relevantes = ['item_name', 'Action', 'Casual', 'Indie', 'Simulation', 'Strategy', 'Free to Play', 'RPG', 'Sports', 'Adventure', 'Racing', 'Early Access', 'Massively Multiplayer', 'Animation & Modeling', 'Video Production', 'Utilities', 'Web Publishing', 'Education', 'Software Training', 'Design & Illustration', 'Audio Production', 'Photo Editing', 'Accounting']
+columnas_relevantes = ['item_name', 'Action', 'Casual', 'Indie', 'Simulation', 'Strategy', 'Free to Play', 'RPG', 'Sports', 'Adventure', 'Racing', 'Early Access', 'Massively Multiplayer', 'Animation &amp; Modeling', 'Video Production', 'Utilities', 'Web Publishing', 'Education', 'Software Training', 'Design &amp; Illustration', 'Audio Production', 'Photo Editing', 'Accounting']
 # Seleccionar los datos relevantes
 datos_relevantes = df_merged[columnas_relevantes]
 # Excluir la columna de nombres de juegos y el ID para el cálculo de similitud
