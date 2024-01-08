@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.metrics.pairwise        import cosine_similarity
 from sklearn.metrics.pairwise        import linear_kernel
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.preprocessing import MinMaxScaler
 
 app = FastAPI(debug=True)
 df_merged=pd.read_csv("df_reducido_final.csv", encoding="utf-8")
@@ -167,4 +168,54 @@ def sentiment_analysis(empresa_desarrolladora):
 
 
 
+
+
+
+# Seleccionar las columnas relevantes para calcular la similitud
+columnas_relevantes = ['item_name', "item_id", 'Action', 'Casual', 'Indie', 'Simulation', 'Strategy', 'Free to Play', 'RPG', 'Sports', 'Adventure', 'Racing', 'Early Access', 'Massively Multiplayer', 'Animation &amp; Modeling', 'Video Production', 'Utilities', 'Web Publishing', 'Education', 'Software Training', 'Design &amp; Illustration', 'Audio Production', 'Photo Editing', 'Accounting']
+# Seleccionar los datos relevantes
+datos_relevantes = df_merged[columnas_relevantes]
+# Excluir la columna de nombres de juegos para el cálculo de similitud
+caracteristicas_juegos = datos_relevantes.drop(['item_name', "item_id"], axis=1)
+# Normalizar los datos si es necesario
+scaler = MinMaxScaler()
+datos_normalizados = scaler.fit_transform(caracteristicas_juegos)
+# Calcular la similitud del coseno entre juegos basado en las características
+similarity_matrix = cosine_similarity(datos_normalizados)
+
+
+@app.get("/recomendar-juego/")
+# Definir la función de recomendación
+def recomendacion_juego(id_producto):
+# Encontrar el índice del juego seleccionado
+    try:
+        juego_seleccionado_idx = df_merged[df_merged['item_id'] == id_producto].index[0]
+    except IndexError:
+        print("El juego ingresado no se encontró en la base de datos.")
+        exit()
+# Obtener las puntuaciones de similitud para el juego seleccionado
+    similarity_scores = similarity_matrix[juego_seleccionado_idx]
+# Obtener los índices de los juegos más similares (excluyendo el juego seleccionado)
+    juegos_recomendados = similarity_scores.argsort()[-2:-7:-1]  # 5 juegos más similares
+# Mostrar los nombres de los juegos recomendados junto con su similitud
+#print(f"\nJuegos recomendados para '{id_producto}':")
+    for i, idx in enumerate(juegos_recomendados, 1):
+        juego_recomendado = df_merged.iloc[idx]['item_name']
+        similitud = similarity_scores[idx]
+        #print(f"{i}. Juego: {juego_recomendado}- Similaridad: {similitud}") 
+    return {"juegos_recomendados": juego_recomendado}
+
+
+
+"""# Ruta para manejar las solicitudes de recomendación de juegos
+
+async def recomendacion_api(id: str):
+    # Solicitar al usuario el nombre de un juego para obtener recomendaciones
+    nombre_juego_seleccionado = input("Ingresa el nombre del juego para obtener recomendaciones: ")
+
+    # Llamar a la función de recomendación con el ID del juego
+    recomendaciones = recomendacion_juego(id)
+    
+    # Devolver las recomendaciones como respuesta JSON"""
+    
 
