@@ -184,9 +184,9 @@ datos_normalizados = scaler.fit_transform(caracteristicas_juegos)
 similarity_matrix = cosine_similarity(datos_normalizados)
 
 
-@app.get("/recomendar-juego/")
+@app.get("/recomendar_juego/")
 # Definir la función de recomendación
-def recomendacion_juego(id_producto):
+def recomendar_juego(id_producto):
 # Encontrar el índice del juego seleccionado
     try:
         juego_seleccionado_idx = df_merged[df_merged['item_id'] == id_producto].index[0]
