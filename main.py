@@ -1,8 +1,6 @@
 from fastapi import FastAPI
 import pandas as pd
 from sklearn.metrics.pairwise        import cosine_similarity
-#from sklearn.metrics.pairwise        import linear_kernel
-#from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import MinMaxScaler
 
 app = FastAPI(debug=True)
