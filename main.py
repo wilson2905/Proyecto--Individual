@@ -85,16 +85,16 @@ def UsersRecommend(anio:int):
     """
     
     
-    # Filtrar las revisiones para el año dado y que sean recomendadas
+    # Filtracion de las revisiones para el año dado y que sean recomendadas
     revisiones_anio = df_merged[(df_merged['posted_year'] ==(anio)) & (df_merged['recommend'] == True)]
 
-    # Filtrar las revisiones con comentarios positivos o neutrales (sentiment_score 1 o 2)
+    # Filtracion de las revisiones con comentarios positivos o neutrales (sentiment_score 1 o 2)
     revisiones_positivas_neutrales = revisiones_anio[df_merged['sentiment_score'].isin([1, 2])]
 
-    # Contar las recomendaciones por juego
+    # se cuenta las recomendaciones por juego
     juegos_recomendados = revisiones_positivas_neutrales['item_name'].value_counts().head(3)
 
-    # Crear la lista de los juegos más recomendados
+    # Creacion de la lista de los juegos más recomendados
     top_3_juegos_recomendados = []
     for puesto, (juego, _) in enumerate(juegos_recomendados.items(), 1):
         top_3_juegos_recomendados.append({"Puesto " + str(puesto): juego})
@@ -115,16 +115,16 @@ def UsersWorstDeveloper(anio:int):
     recomendados por usuarios para el año dado.
     """
     
-    # Filtrar las revisiones para el año dado y que no sean recomendadas
+    # Filtracion de las revisiones para el año dado y que no sean recomendadas
     revisiones_anio = df_merged[(df_merged['posted_year'] == anio) & (df_merged['recommend'] == False)]
 
-    # Filtrar las revisiones con comentarios negativos (sentiment_score 0)
+    # Filtracion de las revisiones con comentarios negativos (sentiment_score 0)
     revisiones_negativas = revisiones_anio[df_merged['sentiment_score'] == 0]
 
-    # Contar las no recomendaciones por desarrolladora
+    # se cuenta las no recomendaciones por desarrolladora
     desarrolladoras_no_recomendadas = revisiones_negativas['developer'].value_counts().head(3)
 
-    # Crear la lista de las desarrolladoras menos recomendadas
+    # se Crea la lista de las desarrolladoras menos recomendadas
     top_3_developers_no_recomendadas = []
     for puesto, (developer, _) in enumerate(desarrolladoras_no_recomendadas.items(), 1):
         top_3_developers_no_recomendadas.append({"Puesto " + str(puesto): developer})
@@ -146,13 +146,13 @@ def sentiment_analysis(empresa_desarrolladora):
     """
     
     empresa_desarrolladora=empresa_desarrolladora.capitalize()
-    # Filtrar las revisiones por la empresa desarrolladora especificada
+    # se filtra las revisiones por la empresa desarrolladora especificada
     revisiones_empresa = df_merged[df_merged['developer'] == empresa_desarrolladora]
 
-    # Contar los registros por análisis de sentimiento
+    # conteo de los registros por análisis de sentimiento
     sentimiento_por_empresa = revisiones_empresa['sentiment_score'].value_counts()
 
-    # Crear el diccionario con los resultados del análisis de sentimiento
+    #creacion del diccionario con los resultados del análisis de sentimiento
     resultado_analisis_sentimiento = {empresa_desarrolladora: [
         f"Negative = {sentimiento_por_empresa.get(0, 0)}",
         f"Neutral = {sentimiento_por_empresa.get(1, 0)}",
@@ -163,38 +163,36 @@ def sentiment_analysis(empresa_desarrolladora):
 
 
 
+#ENTRENAMIENTO MODELO MACHINE LEARNING Y ENDPOINT ITEM-ITEM
 
-
-
-
-
-# Seleccionar las columnas relevantes para calcular la similitud
+# se seleccionan las columnas relevantes para calcular la similitud
 columnas_relevantes = ['item_name', 'Action', 'Casual', 'Indie', 'Simulation', 'Strategy', 'Free to Play', 'RPG', 'Sports', 'Adventure', 'Racing', 'Early Access', 'Massively Multiplayer', 'Animation &amp; Modeling', 'Video Production', 'Utilities', 'Web Publishing', 'Education', 'Software Training', 'Design &amp; Illustration', 'Audio Production', 'Photo Editing', 'Accounting']
-# Seleccionar los datos relevantes
 datos_relevantes = df_merged[columnas_relevantes]
-# Excluir la columna de nombres de juegos y el ID para el cálculo de similitud
 caracteristicas_juegos = datos_relevantes.drop(['item_name'], axis=1)
-# Normalizar los datos si es necesario
+# se normalizan los datos si fuese  necesario
 scaler = MinMaxScaler()
 datos_normalizados = scaler.fit_transform(caracteristicas_juegos)
-# Calcular la similitud del coseno entre juegos basado en las características
+# se calcula la similitud del coseno entre juegos basado en las características
 similarity_matrix = cosine_similarity(datos_normalizados)
 
+
+#endpint recomendacion item-item
 @app.get("/recomendar_juego/{id_producto}")
 def recomendar_juego(id_producto: int):
-    # Encontrar el índice del juego seleccionado
+    """recibe como parametro de entrada, la ID de un juego, y mediante su entrenamiento ya realizado
+    nos devuelve una lista con juegos relacionados a la categoria.
+    ejemplo de parametros de ingreso: 21100, 250180"""
+    # se encuentra el índice del juego seleccionado
     try:
         juego_seleccionado_idx = df_merged[df_merged['item_id'] == id_producto].index[0]
     except IndexError:
         return {"mensaje": "El juego ingresado no se encontró en la base de datos."}
 
-    # Obtener las puntuaciones de similitud para el juego seleccionado
+    # se obtiene las puntuaciones de similitud para el juego seleccionado
     similarity_scores = similarity_matrix[juego_seleccionado_idx]
 
-    # Obtener los índices de los juegos más similares (excluyendo el juego seleccionado)
-    juegos_recomendados = similarity_scores.argsort()[-2:-7:-1]  # 5 juegos más similares
+    juegos_recomendados = similarity_scores.argsort()[-2:-7:-1]  # 5 juegos más similares menos el seleccionado
 
-    # Mostrar los nombres de los juegos recomendados junto con su similitud
     juegos_recomendados_list = []
     for idx in juegos_recomendados:
         juego_recomendado = df_merged.iloc[idx]['item_name']
