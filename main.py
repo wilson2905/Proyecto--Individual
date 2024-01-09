@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 import pandas as pd
-import numpy as np
 from sklearn.metrics.pairwise        import cosine_similarity
 #from sklearn.metrics.pairwise        import linear_kernel
 #from sklearn.feature_extraction.text import TfidfVectorizer
@@ -16,7 +15,7 @@ def message():
 
 ##Creacion de los endpoints
 
-@app.get("/PlayTimeGenre/")
+@app.get("/PlayTimeGenre/{genre}")
 def PlayTimeGenre(genre: str) -> dict:
     """ 
     Obtiene el año con más horas jugadas para un género específico. 
@@ -39,7 +38,7 @@ def PlayTimeGenre(genre: str) -> dict:
 
 
 
-@app.get("/UserForGenre/")
+@app.get("/UserForGenre/{genero}")
 def UserForGenre(genero):
     """
         Recibe un genero de juego como entrada, ejemplos de parametros
@@ -77,8 +76,8 @@ def UserForGenre(genero):
 
 
 
-@app.get("/UsersRecommend/{año}")
-def UsersRecommend(año:int):
+@app.get("/UsersRecommend/{anio}")
+def UsersRecommend(anio:int):
     """A partir del año ingresado como entrada, y del Sentiment_Score busca los desarrolladores
     mas recomendados por los usuarios
     ejemplo de parametro de entrada 2010, 2011, 2012, 2013..
@@ -89,10 +88,10 @@ def UsersRecommend(año:int):
     
     
     # Filtrar las revisiones para el año dado y que sean recomendadas
-    revisiones_año = df_merged[(df_merged['posted_year'] ==(año)) & (df_merged['recommend'] == True)]
+    revisiones_anio = df_merged[(df_merged['posted_year'] ==(anio)) & (df_merged['recommend'] == True)]
 
     # Filtrar las revisiones con comentarios positivos o neutrales (sentiment_score 1 o 2)
-    revisiones_positivas_neutrales = revisiones_año[df_merged['sentiment_score'].isin([1, 2])]
+    revisiones_positivas_neutrales = revisiones_anio[df_merged['sentiment_score'].isin([1, 2])]
 
     # Contar las recomendaciones por juego
     juegos_recomendados = revisiones_positivas_neutrales['item_name'].value_counts().head(3)
@@ -107,8 +106,8 @@ def UsersRecommend(año:int):
 
 
 
-@app.get("/UsersWorstDeveloper/")
-def UsersWorstDeveloper(año:int):
+@app.get("/UsersWorstDeveloper/{anio}")
+def UsersWorstDeveloper(anio:int):
     """
     Recibe como parametro de entrada el año deseado, realizando una busqueda por años y por el 
     sentiment_score
@@ -119,10 +118,10 @@ def UsersWorstDeveloper(año:int):
     """
     
     # Filtrar las revisiones para el año dado y que no sean recomendadas
-    revisiones_año = df_merged[(df_merged['posted_year'] == año) & (df_merged['recommend'] == False)]
+    revisiones_anio = df_merged[(df_merged['posted_year'] == anio) & (df_merged['recommend'] == False)]
 
     # Filtrar las revisiones con comentarios negativos (sentiment_score 0)
-    revisiones_negativas = revisiones_año[df_merged['sentiment_score'] == 0]
+    revisiones_negativas = revisiones_anio[df_merged['sentiment_score'] == 0]
 
     # Contar las no recomendaciones por desarrolladora
     desarrolladoras_no_recomendadas = revisiones_negativas['developer'].value_counts().head(3)
@@ -137,7 +136,7 @@ def UsersWorstDeveloper(año:int):
 
 
 
-@app.get("/sentiment_analysis/")
+@app.get("/sentiment_analysis/{empresa_desarrolladora}")
 def sentiment_analysis(empresa_desarrolladora):
     
     """ recibe como parametro de entrada la empresa desarrolladora,
